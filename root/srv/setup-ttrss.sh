@@ -137,6 +137,26 @@ setup_ttrss()
 
     sed -i -e "s/.*define('PLUGINS'.*/define('PLUGINS', '$TTRSS_PLUGINS, auth_internal, note, updater');/g" ${TTRSS_PATH}/config.php
 
+    # Configure boolean/integer options (unquoted)
+    for var_name in ENABLE_REGISTRATION REG_MAX_USERS
+    do
+      var_value=$(eval "echo \"\$$var_name\"")
+      if [ "x$var_value" != "x" ]; then
+        echo "Setup: Configuring $var_name ($var_value) in config.php"
+        sed -i -e "s@define('$var_name'.*@define('$var_name', $var_value);@g" ${TTRSS_PATH}/config.php
+      fi
+    done
+
+    # Configure string options (quote them)
+    for var_name in REG_NOTIFY_ADDRESS SMTP_FROM_NAME SMTP_FROM_ADDRESS DIGEST_SUBJECT
+    do
+      var_value=$(eval "echo \"\$$var_name\"")
+      if [ "x$var_value" != "x" ]; then
+        echo "Setup: Configuring $var_name ($var_value) in config.php"
+        sed -i -e "s@define('$var_name'.*@define('$var_name', '$var_value');@g" ${TTRSS_PATH}/config.php
+      fi
+    done
+
     # Export variables for sub shells.
     export TTRSS_PATH
     export TTRSS_PATH_PLUGINS
